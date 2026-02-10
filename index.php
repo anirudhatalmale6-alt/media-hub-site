@@ -7,6 +7,7 @@
 
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
+umask(0);
 
 define('DATA_DIR', __DIR__ . '/data/');
 define('UPLOAD_DIR', __DIR__ . '/uploads/');
@@ -17,10 +18,11 @@ define('PER_PAGE', 20);
 
 // Create directories with full permissions
 foreach ([DATA_DIR, UPLOAD_DIR.'images/', UPLOAD_DIR.'videos/', UPLOAD_DIR.'thumbs/'] as $d) {
-    if (!is_dir($d)) @mkdir($d, 0777, true);
+    if (!is_dir($d)) { @mkdir($d, 0777, true); @chmod($d, 0777); }
+    elseif (!is_writable($d)) { @chmod($d, 0777); }
 }
 foreach (['posts.json','chat.json'] as $f) {
-    if (!file_exists(DATA_DIR.$f)) @file_put_contents(DATA_DIR.$f, '[]');
+    if (!file_exists(DATA_DIR.$f)) { @file_put_contents(DATA_DIR.$f, '[]'); @chmod(DATA_DIR.$f, 0666); }
 }
 
 function loadJson($f) {
@@ -30,7 +32,9 @@ function loadJson($f) {
     return is_array($d) ? $d : [];
 }
 function saveJson($f, $d) {
-    @file_put_contents(DATA_DIR.$f, json_encode($d, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT), LOCK_EX);
+    $p = DATA_DIR.$f;
+    @file_put_contents($p, json_encode($d, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT), LOCK_EX);
+    @chmod($p, 0666);
 }
 function e($s) { return htmlspecialchars($s??'', ENT_QUOTES, 'UTF-8'); }
 function timeAgo($t) {
@@ -110,7 +114,11 @@ if ($action) {
         $sub=$isI?'images/':'videos/';
         $tp=UPLOAD_DIR.$sub.$fn;
         if(!@move_uploaded_file($file['tmp_name'],$tp)){
-            echo json_encode(['error'=>'שגיאה בשמירת הקובץ. בדקו הרשאות תיקייה.'],JSON_UNESCAPED_UNICODE);exit;
+            $dir=UPLOAD_DIR.$sub;
+            $err='שגיאה בשמירת הקובץ.';
+            if(!is_dir($dir)) $err.=' תיקייה לא קיימת: '.$dir;
+            elseif(!is_writable($dir)) $err.=' אין הרשאת כתיבה לתיקייה: '.$dir.' | בצעו: chmod -R 777 uploads/';
+            echo json_encode(['error'=>$err],JSON_UNESCAPED_UNICODE);exit;
         }
         @chmod($tp, 0666);
         $mu=UPLOAD_URL.$sub.$fn;$tu=$mu;
@@ -168,17 +176,29 @@ if ($action) {
 
     // Debug endpoint
     if ($action==='debug') {
+        $dirs = [DATA_DIR, UPLOAD_DIR.'images/', UPLOAD_DIR.'videos/', UPLOAD_DIR.'thumbs/'];
+        $dirInfo = [];
+        foreach ($dirs as $d) {
+            $dirInfo[$d] = [
+                'exists' => is_dir($d),
+                'writable' => is_writable($d),
+                'perms' => is_dir($d) ? decoct(fileperms($d) & 0777) : 'N/A',
+                'owner' => is_dir($d) ? posix_getpwuid(fileowner($d))['name'] ?? fileowner($d) : 'N/A',
+            ];
+        }
         $info = [
-            'data_dir' => DATA_DIR,
-            'data_writable' => is_writable(DATA_DIR),
-            'upload_dir' => UPLOAD_DIR,
-            'uploads_writable' => is_writable(UPLOAD_DIR.'images/'),
-            'posts_count' => count(loadJson('posts.json')),
-            'chat_count' => count(loadJson('chat.json')),
+            'directories' => $dirInfo,
+            'json_files' => [
+                'posts.json' => ['exists'=>file_exists(DATA_DIR.'posts.json'), 'writable'=>is_writable(DATA_DIR.'posts.json'), 'count'=>count(loadJson('posts.json'))],
+                'chat.json' => ['exists'=>file_exists(DATA_DIR.'chat.json'), 'writable'=>is_writable(DATA_DIR.'chat.json'), 'count'=>count(loadJson('chat.json'))],
+            ],
             'php_version' => PHP_VERSION,
-            'max_upload' => ini_get('upload_max_filesize'),
-            'post_max' => ini_get('post_max_size'),
-            'gd' => extension_loaded('gd'),
+            'max_upload_size' => ini_get('upload_max_filesize'),
+            'post_max_size' => ini_get('post_max_size'),
+            'gd_loaded' => extension_loaded('gd'),
+            'current_user' => get_current_user(),
+            'php_user' => posix_getpwuid(posix_geteuid())['name'] ?? posix_geteuid(),
+            'umask' => sprintf('%04o', umask()),
         ];
         echo json_encode($info, JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT); exit;
     }
