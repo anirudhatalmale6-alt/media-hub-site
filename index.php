@@ -259,11 +259,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
   padding:0 20px;
 }
 .logo{
-  font-size:1.7rem;font-weight:900;color:var(--cyan);
-  text-decoration:none;letter-spacing:-1px;
-  display:flex;align-items:center;gap:3px;
+  text-decoration:none;display:flex;align-items:center;
 }
-.logo em{font-style:normal;color:var(--white);font-size:1rem;font-weight:400;opacity:.7;margin-right:4px}
+.logo img{height:45px;border-radius:4px;}
 .nav{display:flex;list-style:none;gap:0;align-items:center}
 .nav a{
   color:rgba(255,255,255,.75);text-decoration:none;
@@ -530,7 +528,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
   .card-title{font-size:.82rem}
   .hsrch{display:none}
   .nav a{padding:0 10px;font-size:.82rem}
-  .logo{font-size:1.3rem}
+  .logo img{height:36px}
   .hero{grid-template-columns:1fr;gap:8px}
   .hero-card:first-child{min-height:200px}
   .wrap{margin-top:var(--hh)}
@@ -555,7 +553,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 <!-- HEADER -->
 <header class="hdr">
   <div class="hdr-in">
-    <a href="index.php" class="logo">NO<em>Media</em></a>
+    <a href="index.php" class="logo"><img src="logo.jpg" alt="NO"></a>
     <nav>
       <ul class="nav">
         <li><a href="index.php?page=home" class="<?=($page==='home'?'on':'')?>">דף הבית</a></li>
