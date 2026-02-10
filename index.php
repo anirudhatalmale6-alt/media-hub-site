@@ -146,27 +146,40 @@ if ($action) {
     if ($action==='send_chat' && $_SERVER['REQUEST_METHOD']==='POST') {
         $nick=trim($_POST['nickname']??'אנונימי');
         $msg=trim($_POST['message']??'');
-        $hasI=isset($_FILES['image'])&&$_FILES['image']['error']===UPLOAD_ERR_OK;
-        if(!$msg&&!$hasI){echo json_encode(['error'=>'הודעה ריקה'],JSON_UNESCAPED_UNICODE);exit;}
-        $imgUrl=null;
-        if($hasI){
-            $f=$_FILES['image'];$mime=mime_content_type($f['tmp_name']);
-            if(in_array($mime,['image/jpeg','image/png','image/gif','image/webp'])&&$f['size']<=MAX_IMAGE_SIZE){
+        $hasF=isset($_FILES['file'])&&$_FILES['file']['error']===UPLOAD_ERR_OK;
+        // backward compat: also check 'image' field
+        if(!$hasF&&isset($_FILES['image'])&&$_FILES['image']['error']===UPLOAD_ERR_OK){$_FILES['file']=$_FILES['image'];$hasF=true;}
+        if(!$msg&&!$hasF){echo json_encode(['error'=>'הודעה ריקה'],JSON_UNESCAPED_UNICODE);exit;}
+        $fileUrl=null;$fileType=null;
+        if($hasF){
+            $f=$_FILES['file'];$mime=mime_content_type($f['tmp_name']);
+            $aI=['image/jpeg','image/png','image/gif','image/webp'];
+            $aV=['video/mp4','video/webm','video/ogg'];
+            $aA=['audio/mpeg','audio/ogg','audio/wav','audio/mp4','audio/aac','audio/flac','audio/webm'];
+            $isI=in_array($mime,$aI);$isV=in_array($mime,$aV);$isA=in_array($mime,$aA);
+            if($isI||$isV||$isA){
                 $ext=strtolower(pathinfo($f['name'],PATHINFO_EXTENSION));
-                if(!$ext)$ext='jpg';
+                if(!$ext){if($isI)$ext='jpg';elseif($isV)$ext='mp4';else $ext='mp3';}
                 $fn=uniqid('c_',true).'.'.$ext;
-                $tp=UPLOAD_DIR.'images/'.$fn;
+                if($isI){$sub='images/';$fileType='image';}
+                elseif($isV){$sub='videos/';$fileType='video';}
+                else{$sub='images/';$fileType='audio';}
+                $tp=UPLOAD_DIR.$sub.$fn;
                 if(@move_uploaded_file($f['tmp_name'],$tp)){
                     @chmod($tp,0666);
-                    $imgUrl=UPLOAD_URL.'images/'.$fn;$tu=$imgUrl;
-                    $tf=UPLOAD_DIR.'thumbs/'.$fn;
-                    if(makeThumb($tp,$tf,400)){$tu=UPLOAD_URL.'thumbs/'.$fn;@chmod($tf,0666);}
-                    $post=['id'=>uniqid('p_'),'title'=>$msg?:'תמונה מהצ\'אט','type'=>'image','media_url'=>$imgUrl,'thumb_url'=>$tu,'nickname'=>$nick,'created_at'=>time()];
+                    $fileUrl=UPLOAD_URL.$sub.$fn;$tu=$fileUrl;
+                    if($isI){
+                        $tf=UPLOAD_DIR.'thumbs/'.$fn;
+                        if(makeThumb($tp,$tf,400)){$tu=UPLOAD_URL.'thumbs/'.$fn;@chmod($tf,0666);}
+                    }
+                    $postType=$isI?'image':($isV?'video':'audio');
+                    $postTitle=$msg?:($isI?'תמונה מהצ\'אט':($isV?'סרטון מהצ\'אט':'שיר מהצ\'אט'));
+                    $post=['id'=>uniqid('p_'),'title'=>$postTitle,'type'=>$postType,'media_url'=>$fileUrl,'thumb_url'=>$tu,'nickname'=>$nick,'created_at'=>time()];
                     $posts=loadJson('posts.json');$posts[]=$post;saveJson('posts.json',$posts);
                 }
             }
         }
-        $cm=['id'=>uniqid('c_'),'nickname'=>$nick,'message'=>$msg,'image_url'=>$imgUrl,'created_at'=>time()];
+        $cm=['id'=>uniqid('c_'),'nickname'=>$nick,'message'=>$msg,'file_url'=>$fileUrl,'file_type'=>$fileType,'image_url'=>($fileType==='image'?$fileUrl:null),'created_at'=>time()];
         $chat=loadJson('chat.json');$chat[]=$cm;
         if(count($chat)>500)$chat=array_slice($chat,-500);
         saveJson('chat.json',$chat);
@@ -580,12 +593,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
   <main class="main">
 
     <?php if($page==='home'): ?>
-    <div class="upzone" id="uz" onclick="document.getElementById('uf').click()">
-      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-      <h3>העלאת תמונה או סרטון</h3>
-      <p>גררו קובץ לכאן או לחצו לבחירה</p>
-      <input type="file" id="uf" accept="image/*,video/*">
-    </div>
     <div id="heroBox"></div>
     <div class="sec">
       <h2>תמונות אחרונות</h2>
@@ -613,7 +620,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
     <div class="chat-bar">
       <button class="cb cb-send" id="cSend"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
       <input type="text" id="cTxt" placeholder="הקלד הודעה..." autocomplete="off">
-      <label class="cb cb-img"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><input type="file" id="cImg" accept="image/*"></label>
+      <label class="cb cb-img"><svg viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg><input type="file" id="cImg" accept="image/*,video/*,audio/*"></label>
     </div>
   </aside>
 </div>
@@ -766,7 +773,10 @@ function loadChat(){
       var mine=m.nickname===nick;
       var h='<div class="cmsg '+(mine?'me':'ot')+'">';
       if(!mine)h+='<div class="cmsg-nick">'+esc(m.nickname)+'</div>';
-      if(m.image_url)h+='<img src="'+escA(m.image_url)+'" onclick="event.stopPropagation();oLB(\''+escA(m.image_url)+'\')" alt="">';
+      var fu=m.file_url||m.image_url,ft=m.file_type||(m.image_url?'image':null);
+      if(fu&&ft==='image')h+='<img src="'+escA(fu)+'" onclick="event.stopPropagation();oLB(\''+escA(fu)+'\')" alt="">';
+      else if(fu&&ft==='video')h+='<video src="'+escA(fu)+'" controls style="max-width:100%;border-radius:6px;margin-top:3px" onclick="event.stopPropagation()"></video>';
+      else if(fu&&ft==='audio')h+='<audio src="'+escA(fu)+'" controls style="width:100%;margin-top:3px" onclick="event.stopPropagation()"></audio>';
       if(m.message)h+='<div>'+esc(m.message)+'</div>';
       h+='<div class="cmsg-t">'+esc(m.time_ago||'')+'</div></div>';return h;
     }).join('');
@@ -783,7 +793,7 @@ function sendMsg(){
 }
 document.getElementById('cImg').onchange=function(){
   if(!this.files.length)return;if(!nick){chkNick();this.value='';return}
-  var fd=new FormData();fd.append('nickname',nick);fd.append('message','');fd.append('image',this.files[0]);this.value='';
+  var fd=new FormData();fd.append('nickname',nick);fd.append('message','');fd.append('file',this.files[0]);this.value='';
   apiP('send_chat',fd).then(function(){loadChat();if(cp==='home')setTimeout(loadHome,400)}).catch(function(){});
 };
 loadChat();setInterval(loadChat,4000);
