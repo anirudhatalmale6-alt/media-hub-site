@@ -400,12 +400,16 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 @keyframes blinky{0%,100%{opacity:1}50%{opacity:.3}}
 
 .chat-msgs{
-  overflow-y:scroll;padding:10px 8px;
+  overflow-y:scroll !important;padding:10px 8px;
   display:flex;flex-direction:column;gap:4px;
   background:#f0f2f5;
   overscroll-behavior:contain;
-  max-height:calc(100vh - var(--hh) - var(--ticker) - 42px - 52px);
+  max-height:calc(100vh - var(--hh) - var(--ticker) - 94px);
+  flex:1;
 }
+.chat-msgs::-webkit-scrollbar{width:6px}
+.chat-msgs::-webkit-scrollbar-track{background:#e0e0e0}
+.chat-msgs::-webkit-scrollbar-thumb{background:#999;border-radius:3px}
 .cmsg{
   max-width:82%;padding:6px 10px;border-radius:8px;
   font-size:.8rem;line-height:1.4;word-wrap:break-word;
