@@ -213,7 +213,7 @@ $page = $_GET['page'] ?? 'home';
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MediaHub - מדיה ותמונות</title>
+<title>NO - מדיה ותמונות</title>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -575,7 +575,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 <!-- HEADER -->
 <header class="hdr">
   <div class="hdr-in">
-    <a href="index.php" class="logo">JDN<em>MediaHub</em></a>
+    <a href="index.php" class="logo">NO<em>Media</em></a>
     <nav>
       <ul class="nav">
         <li><a href="index.php?page=home" class="<?=($page==='home'?'on':'')?>">דף הבית</a></li>
