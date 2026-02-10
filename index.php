@@ -400,10 +400,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 @keyframes blinky{0%,100%{opacity:1}50%{opacity:.3}}
 
 .chat-msgs{
-  flex:1;overflow-y:auto;padding:10px 8px;
+  overflow-y:scroll;padding:10px 8px;
   display:flex;flex-direction:column;gap:4px;
   background:#f0f2f5;
   overscroll-behavior:contain;
+  max-height:calc(100vh - var(--hh) - var(--ticker) - 42px - 52px);
 }
 .cmsg{
   max-width:82%;padding:6px 10px;border-radius:8px;
@@ -783,29 +784,8 @@ document.getElementById('cImg').onchange=function(){
 };
 loadChat();setInterval(loadChat,4000);
 
-// Fix chat scroll - set explicit height so overflow works
-(function(){
-  var msgs=document.getElementById('chatMsgs');
-  if(!msgs)return;
-  function fixH(){
-    var chat=document.getElementById('chatBox');
-    if(!chat)return;
-    var hd=chat.querySelector('.chat-hd');
-    var bar=chat.querySelector('.chat-bar');
-    var hdH=hd?hd.offsetHeight:42;
-    var barH=bar?bar.offsetHeight:50;
-    var chatH=chat.offsetHeight;
-    msgs.style.height=(chatH-hdH-barH)+'px';
-    msgs.style.maxHeight=(chatH-hdH-barH)+'px';
-    msgs.style.overflow='auto';
-  }
-  fixH();
-  window.addEventListener('resize',fixH);
-  msgs.addEventListener('wheel',function(e){
-    e.preventDefault();
-    msgs.scrollTop+=e.deltaY;
-  },{passive:false});
-})();
+// Chat scroll fix
+document.getElementById('chatMsgs').addEventListener('wheel',function(e){e.preventDefault();this.scrollTop+=e.deltaY},{passive:false});
 
 // Search
 document.getElementById('sInput').oninput=function(){
