@@ -390,6 +390,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
   top:calc(var(--hh)+var(--ticker));left:0;bottom:0;
   background:var(--white);display:flex;flex-direction:column;
   z-index:900;border-right:1px solid var(--border);
+  overflow:hidden;
 }
 .chat-hd{
   padding:10px 14px;background:var(--navy);
@@ -400,7 +401,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 @keyframes blinky{0%,100%{opacity:1}50%{opacity:.3}}
 
 .chat-msgs{
-  flex:1;overflow-y:auto;padding:10px 8px;
+  flex:1 1 0;min-height:0;overflow-y:scroll;padding:10px 8px;
   display:flex;flex-direction:column;gap:4px;
   background:#f0f2f5;
   overscroll-behavior:contain;
