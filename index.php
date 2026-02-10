@@ -764,23 +764,39 @@ document.getElementById('upGo').onclick=function(){
 };
 
 // Chat
+var lastChatCount=0;
+function chatMsgHtml(m){
+  var mine=m.nickname===nick;
+  var h='<div class="cmsg '+(mine?'me':'ot')+'">';
+  if(!mine)h+='<div class="cmsg-nick">'+esc(m.nickname)+'</div>';
+  var fu=m.file_url||m.image_url,ft=m.file_type||(m.image_url?'image':null);
+  if(fu&&ft==='image')h+='<img src="'+escA(fu)+'" onclick="event.stopPropagation();oLB(\''+escA(fu)+'\')" alt="">';
+  else if(fu&&ft==='video')h+='<video src="'+escA(fu)+'" controls style="max-width:100%;border-radius:6px;margin-top:3px" onclick="event.stopPropagation()"></video>';
+  else if(fu&&ft==='audio')h+='<audio src="'+escA(fu)+'" controls style="width:100%;margin-top:3px" onclick="event.stopPropagation()"></audio>';
+  if(m.message)h+='<div>'+esc(m.message)+'</div>';
+  h+='<div class="cmsg-t">'+esc(m.time_ago||'')+'</div></div>';return h;
+}
+function isMediaPlaying(){
+  var c=document.getElementById('chatMsgs');
+  var vids=c.querySelectorAll('video');for(var i=0;i<vids.length;i++){if(!vids[i].paused)return true}
+  var auds=c.querySelectorAll('audio');for(var i=0;i<auds.length;i++){if(!auds[i].paused)return true}
+  return false;
+}
 function loadChat(){
   api('get_chat').then(function(d){
     var c=document.getElementById('chatMsgs');
-    if(!d.messages||!d.messages.length){c.innerHTML='<div style="text-align:center;color:#999;padding:18px;font-size:.8rem">הצ\'אט ריק - היו הראשונים!</div>';return}
-    var ab=c.scrollTop>=c.scrollHeight-c.clientHeight-40,pv=c.children.length;
-    c.innerHTML=d.messages.map(function(m){
-      var mine=m.nickname===nick;
-      var h='<div class="cmsg '+(mine?'me':'ot')+'">';
-      if(!mine)h+='<div class="cmsg-nick">'+esc(m.nickname)+'</div>';
-      var fu=m.file_url||m.image_url,ft=m.file_type||(m.image_url?'image':null);
-      if(fu&&ft==='image')h+='<img src="'+escA(fu)+'" onclick="event.stopPropagation();oLB(\''+escA(fu)+'\')" alt="">';
-      else if(fu&&ft==='video')h+='<video src="'+escA(fu)+'" controls style="max-width:100%;border-radius:6px;margin-top:3px" onclick="event.stopPropagation()"></video>';
-      else if(fu&&ft==='audio')h+='<audio src="'+escA(fu)+'" controls style="width:100%;margin-top:3px" onclick="event.stopPropagation()"></audio>';
-      if(m.message)h+='<div>'+esc(m.message)+'</div>';
-      h+='<div class="cmsg-t">'+esc(m.time_ago||'')+'</div></div>';return h;
-    }).join('');
-    if(ab||c.children.length!==pv)c.scrollTop=c.scrollHeight;
+    if(!d.messages||!d.messages.length){c.innerHTML='<div style="text-align:center;color:#999;padding:18px;font-size:.8rem">הצ\'אט ריק - היו הראשונים!</div>';lastChatCount=0;return}
+    var cnt=d.messages.length;
+    if(cnt===lastChatCount&&isMediaPlaying())return;
+    if(cnt>lastChatCount&&lastChatCount>0&&isMediaPlaying()){
+      var newMsgs=d.messages.slice(lastChatCount);
+      newMsgs.forEach(function(m){var div=document.createElement('div');div.innerHTML=chatMsgHtml(m);while(div.firstChild)c.appendChild(div.firstChild)});
+      c.scrollTop=c.scrollHeight;lastChatCount=cnt;return;
+    }
+    var ab=c.scrollTop>=c.scrollHeight-c.clientHeight-40;
+    c.innerHTML=d.messages.map(function(m){return chatMsgHtml(m)}).join('');
+    if(ab||cnt!==lastChatCount)c.scrollTop=c.scrollHeight;
+    lastChatCount=cnt;
   }).catch(function(){})
 }
 document.getElementById('cSend').onclick=sendMsg;
