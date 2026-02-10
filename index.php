@@ -401,19 +401,21 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 @keyframes blinky{0%,100%{opacity:1}50%{opacity:.3}}
 
 .chat-msgs{
-  flex:1 1 0;min-height:0;overflow-y:scroll;padding:10px 8px;
-  display:flex;flex-direction:column;gap:4px;
+  flex:1;overflow-y:auto;padding:10px 8px;
+  display:block;
   background:#f0f2f5;
   overscroll-behavior:contain;
   -webkit-overflow-scrolling:touch;
 }
+.chat-msgs .cmsg{margin-bottom:4px}
 .cmsg{
   max-width:82%;padding:6px 10px;border-radius:8px;
   font-size:.8rem;line-height:1.4;word-wrap:break-word;
   box-shadow:0 1px 1px rgba(0,0,0,.05);
 }
-.cmsg.ot{align-self:flex-start;background:var(--white);border:1px solid var(--border);border-top-right-radius:2px}
-.cmsg.me{align-self:flex-end;background:#d9fdd3;border-top-left-radius:2px}
+.cmsg.ot{margin-left:auto;margin-right:0;background:var(--white);border:1px solid var(--border);border-top-right-radius:2px}
+.cmsg.me{margin-right:auto;margin-left:0;background:#d9fdd3;border-top-left-radius:2px}
+.cmsg::after{content:'';display:table;clear:both}
 .cmsg-nick{font-size:.65rem;font-weight:700;color:var(--cyan-dark);margin-bottom:1px}
 .cmsg img{max-width:100%;border-radius:6px;margin-top:3px;cursor:pointer}
 .cmsg-t{font-size:.58rem;color:var(--text3);text-align:left;margin-top:2px}
