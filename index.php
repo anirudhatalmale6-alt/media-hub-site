@@ -783,10 +783,24 @@ document.getElementById('cImg').onchange=function(){
 };
 loadChat();setInterval(loadChat,4000);
 
-// Fix chat scroll
+// Fix chat scroll - set explicit height so overflow works
 (function(){
   var msgs=document.getElementById('chatMsgs');
   if(!msgs)return;
+  function fixH(){
+    var chat=document.getElementById('chatBox');
+    if(!chat)return;
+    var hd=chat.querySelector('.chat-hd');
+    var bar=chat.querySelector('.chat-bar');
+    var hdH=hd?hd.offsetHeight:42;
+    var barH=bar?bar.offsetHeight:50;
+    var chatH=chat.offsetHeight;
+    msgs.style.height=(chatH-hdH-barH)+'px';
+    msgs.style.maxHeight=(chatH-hdH-barH)+'px';
+    msgs.style.overflow='auto';
+  }
+  fixH();
+  window.addEventListener('resize',fixH);
   msgs.addEventListener('wheel',function(e){
     e.preventDefault();
     msgs.scrollTop+=e.deltaY;
