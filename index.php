@@ -238,7 +238,7 @@ $page = $_GET['page'] ?? 'home';
   --shadow2:0 6px 24px rgba(0,0,0,.12);
   --r:8px;
   --hh:58px;
-  --ticker:38px;
+  --ticker:0px;
   --chatw:310px;
   --font:'Heebo',sans-serif;
 }
@@ -286,26 +286,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .hsrch input:focus{background:rgba(255,255,255,.18);border-color:var(--cyan)}
 .hsrch svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);width:13px;height:13px;stroke:rgba(255,255,255,.4);fill:none;stroke-width:2;pointer-events:none}
 
-/* ═══ TICKER ═══ */
-.ticker{
-  background:linear-gradient(135deg,#e0f7fa 0%,#b2ebf2 100%);
-  height:var(--ticker);position:fixed;top:var(--hh);left:0;right:0;z-index:999;
-  display:flex;align-items:center;overflow:hidden;
-  border-bottom:1px solid #b2dfdb;
-  font-size:.78rem;color:var(--navy);
-}
-.ticker-label{
-  background:var(--cyan-dark);color:#fff;
-  padding:0 14px;height:100%;display:flex;align-items:center;
-  font-weight:700;font-size:.8rem;flex-shrink:0;white-space:nowrap;
-}
-.ticker-scroll{
-  display:flex;gap:28px;padding:0 20px;
-  animation:scroll 40s linear infinite;white-space:nowrap;
-}
-.ticker-item{display:flex;align-items:center;gap:6px}
-.ticker-dot{width:5px;height:5px;background:var(--cyan-dark);border-radius:50%;flex-shrink:0}
-@keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+/* ticker removed */
 
 /* ═══ LAYOUT ═══ */
 .wrap{
@@ -552,7 +533,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
   .logo{font-size:1.3rem}
   .hero{grid-template-columns:1fr;gap:8px}
   .hero-card:first-child{min-height:200px}
-  .ticker{display:none}
   .wrap{margin-top:var(--hh)}
   .chat{top:var(--hh)}
 }
@@ -591,18 +571,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
   </div>
 </header>
 
-<!-- TICKER -->
-<div class="ticker">
-  <div class="ticker-label">מבזקים</div>
-  <div class="ticker-scroll" id="tickerScroll">
-    <span class="ticker-item"><span class="ticker-dot"></span> ברוכים הבאים לאתר שיתוף התמונות והסרטונים</span>
-    <span class="ticker-item"><span class="ticker-dot"></span> ניתן להעלות תמונות דרך הצ'אט</span>
-    <span class="ticker-item"><span class="ticker-dot"></span> תמונות חדשות מתעדכנות באופן שוטף</span>
-    <span class="ticker-item"><span class="ticker-dot"></span> ברוכים הבאים לאתר שיתוף התמונות והסרטונים</span>
-    <span class="ticker-item"><span class="ticker-dot"></span> ניתן להעלות תמונות דרך הצ'אט</span>
-    <span class="ticker-item"><span class="ticker-dot"></span> תמונות חדשות מתעדכנות באופן שוטף</span>
-  </div>
-</div>
 
 <div class="wrap">
   <main class="main">
