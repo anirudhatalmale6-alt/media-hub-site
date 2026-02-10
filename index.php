@@ -388,26 +388,22 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 .chat{
   width:var(--chatw);position:fixed;
   top:calc(var(--hh)+var(--ticker));left:0;bottom:0;
-  background:var(--white);
+  background:var(--white);display:flex;flex-direction:column;
   z-index:900;border-right:1px solid var(--border);
-  overflow:hidden;
 }
 .chat-hd{
   padding:10px 14px;background:var(--navy);
   color:#fff;font-size:.88rem;font-weight:700;
-  display:flex;align-items:center;gap:7px;
-  position:absolute;top:0;left:0;right:0;height:42px;
+  display:flex;align-items:center;gap:7px;flex-shrink:0;
 }
 .chat-hd .dot{width:6px;height:6px;background:#4caf50;border-radius:50%;animation:blinky 2s infinite}
 @keyframes blinky{0%,100%{opacity:1}50%{opacity:.3}}
 
 .chat-msgs{
-  overflow-y:auto;padding:10px 8px;
+  flex:1;overflow-y:auto;padding:10px 8px;
   display:flex;flex-direction:column;gap:4px;
   background:#f0f2f5;
   overscroll-behavior:contain;
-  -webkit-overflow-scrolling:touch;
-  position:absolute;top:42px;bottom:52px;left:0;right:0;
 }
 .cmsg{
   max-width:82%;padding:6px 10px;border-radius:8px;
@@ -422,8 +418,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 
 .chat-bar{
   padding:8px;background:var(--white);border-top:1px solid var(--border);
-  display:flex;align-items:center;gap:6px;
-  position:absolute;bottom:0;left:0;right:0;height:52px;
+  display:flex;align-items:center;gap:6px;flex-shrink:0;
 }
 .chat-bar input[type=text]{
   flex:1;padding:7px 12px;border:1px solid var(--border);
