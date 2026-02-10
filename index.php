@@ -783,18 +783,14 @@ document.getElementById('cImg').onchange=function(){
 };
 loadChat();setInterval(loadChat,4000);
 
-// Fix chat scroll - prevent page scroll when scrolling inside chat
+// Fix chat scroll
 (function(){
-  var chat=document.getElementById('chatBox');
-  if(!chat)return;
-  chat.addEventListener('wheel',function(e){
-    var msgs=document.getElementById('chatMsgs');
-    var atTop=msgs.scrollTop<=0;
-    var atBot=msgs.scrollTop>=msgs.scrollHeight-msgs.clientHeight-1;
-    if((e.deltaY<0&&atTop)||(e.deltaY>0&&atBot)){e.preventDefault();}
-    e.stopPropagation();
+  var msgs=document.getElementById('chatMsgs');
+  if(!msgs)return;
+  msgs.addEventListener('wheel',function(e){
+    e.preventDefault();
+    msgs.scrollTop+=e.deltaY;
   },{passive:false});
-  chat.addEventListener('touchmove',function(e){e.stopPropagation();},{passive:true});
 })();
 
 // Search
