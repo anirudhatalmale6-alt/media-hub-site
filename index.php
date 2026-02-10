@@ -785,6 +785,20 @@ document.getElementById('cImg').onchange=function(){
 };
 loadChat();setInterval(loadChat,4000);
 
+// Fix chat scroll - prevent page scroll when scrolling inside chat
+(function(){
+  var chat=document.getElementById('chatBox');
+  if(!chat)return;
+  chat.addEventListener('wheel',function(e){
+    var msgs=document.getElementById('chatMsgs');
+    var atTop=msgs.scrollTop<=0;
+    var atBot=msgs.scrollTop>=msgs.scrollHeight-msgs.clientHeight-1;
+    if((e.deltaY<0&&atTop)||(e.deltaY>0&&atBot)){e.preventDefault();}
+    e.stopPropagation();
+  },{passive:false});
+  chat.addEventListener('touchmove',function(e){e.stopPropagation();},{passive:true});
+})();
+
 // Search
 document.getElementById('sInput').oninput=function(){
   var q=this.value.trim().toLowerCase();
