@@ -403,6 +403,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
   flex:1;overflow-y:auto;padding:10px 8px;
   display:flex;flex-direction:column;gap:4px;
   background:#f0f2f5;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
 }
 .cmsg{
   max-width:82%;padding:6px 10px;border-radius:8px;
@@ -477,7 +479,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 /* ═══ LIGHTBOX ═══ */
 .lb{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:3000;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all .25s;cursor:pointer}
 .lb.show{opacity:1;visibility:visible}
-.lb img{max-width:90vw;max-height:90vh;border-radius:6px;cursor:default}
+.lb img,.lb video{max-width:90vw;max-height:90vh;border-radius:6px;cursor:default}
 .lb-x{position:absolute;top:14px;right:14px;width:36px;height:36px;background:rgba(255,255,255,.15);border:none;border-radius:50%;color:#fff;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .lb-x:hover{background:rgba(255,255,255,.3)}
 
@@ -637,7 +639,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:
 </div>
 
 <!-- LIGHTBOX -->
-<div class="lb" id="lb" onclick="xLB()"><button class="lb-x" onclick="xLB()">&times;</button><img id="lbI" src="" alt=""></div>
+<div class="lb" id="lb" onclick="xLB()"><button class="lb-x" onclick="xLB()">&times;</button><img id="lbI" src="" alt="" onclick="event.stopPropagation()"><video id="lbV" src="" controls onclick="event.stopPropagation()" style="display:none"></video></div>
 
 <script>
 var nick=localStorage.getItem('mh_nick')||'',cp='<?=e($page)?>',ip=1,vp=1,upF=null;
@@ -653,7 +655,7 @@ function escA(s){return(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;')}
 
 function mkCard(p,i){
   var isV=p.type==='video',th=p.thumb_url||p.media_url||'',t=p.title||(isV?'סרטון':'תמונה');
-  var cl=isV?"window.open('"+escA(p.media_url)+"','_blank')":"oLB('"+escA(p.media_url)+"')";
+  var cl=isV?"oLB('"+escA(p.media_url)+"',true)":"oLB('"+escA(p.media_url)+"')";
   var vd='';
   if(isV){vd='<div class="vbadge"><svg width="8" height="8" viewBox="0 0 24 24" fill="white" stroke="none"><polygon points="5 3 19 12 5 21"/></svg> סרטון</div><div class="playbtn"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>'}
   return '<div class="card" onclick="'+cl+'" style="animation-delay:'+(i*.03)+'s"><div class="card-wrap"><img class="card-img" src="'+escA(th)+'" alt="'+escA(t)+'" loading="lazy" onerror="this.style.background=\'#e8eaed\'">'+vd+'</div><div class="card-body"><div class="card-title">'+esc(t)+'</div><div class="card-meta"><span class="card-author">'+esc(p.nickname||'אנונימי')+'</span><span>'+esc(p.time_ago||'')+'</span></div></div></div>'
@@ -709,8 +711,13 @@ function loadVid(pg){
 }
 
 // Lightbox
-function oLB(u){document.getElementById('lbI').src=u;document.getElementById('lb').classList.add('show');document.body.style.overflow='hidden'}
-function xLB(){document.getElementById('lb').classList.remove('show');document.body.style.overflow=''}
+function oLB(u,isVideo){
+  var img=document.getElementById('lbI'),vid=document.getElementById('lbV');
+  if(isVideo){img.style.display='none';vid.style.display='block';vid.src=u;vid.play();}
+  else{vid.style.display='none';vid.pause();vid.src='';img.style.display='block';img.src=u;}
+  document.getElementById('lb').classList.add('show');document.body.style.overflow='hidden';
+}
+function xLB(){var vid=document.getElementById('lbV');vid.pause();vid.src='';document.getElementById('lb').classList.remove('show');document.body.style.overflow='';}
 document.onkeydown=function(e){if(e.key==='Escape')xLB()};
 
 // Upload
